@@ -15,6 +15,14 @@
         "type": "git",
         "url": ""
     },
+    "release-it": {
+        "git": {
+            "add": "dist"
+        },
+        "hooks": {
+            "after:bump": "npm run build"
+        }
+    },
     "scripts": {
         "build": "n8n-node build",
         "build:watch": "tsc --watch",
