@@ -24,7 +24,7 @@ export class TekionApc implements INodeType {
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["action"]}}',
 		description: 'Communicate with the Tekion 2.0 API',
 		defaults: {
-			name: 'tekionApc',
+			name: 'Tekion APC',
 		},
 		usableAsTool: true,
 		inputs: ['main' as NodeConnectionType],
