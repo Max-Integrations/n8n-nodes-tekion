@@ -7,6 +7,40 @@ const showOnlyForVehicleInventoryGetMany = {
 
 export const vehicleInventoryGetManyDescription: INodeProperties[] = [
 	{
+		displayName: 'Modified After',
+		name: 'modifiedStartTime',
+		type: 'dateTime',
+		displayOptions: {
+			show: showOnlyForVehicleInventoryGetMany,
+		},
+		default: '',
+		description: 'The date after which the vehicles were modified',
+	},
+	{
+		displayName: 'Status',
+		name: 'status',
+		type: 'options',
+		displayOptions: {
+			show: showOnlyForVehicleInventoryGetMany,
+		},
+		options: [
+			{ name: 'All', value: 'ALL' },
+			{ name: 'Cancelled', value: 'CANCELLED' },
+			{ name: 'Draft', value: 'DRAFT' },
+			{ name: 'Float', value: 'FLOAT' },
+			{ name: 'In Transit', value: 'IN_TRANSIT' },
+			{ name: 'Invoiced', value: 'INVOICED' },
+			{ name: 'On Hold', value: 'ON_HOLD' },
+			{ name: 'On Order', value: 'ON_ORDER' },
+			{ name: 'Sold', value: 'SOLD' },
+			{ name: 'Stocked In', value: 'STOCKED_IN' },
+			{ name: 'Tentative', value: 'TENTATIVE' },
+			{ name: 'Transferred Out', value: 'TRANSFERRED_OUT' },
+		],
+		default: 'ALL',
+		description: 'The status of the vehicles to filter on',
+	},
+	{
 		displayName: 'Filters',
 		name: 'filters',
 		type: 'fixedCollection',
@@ -29,57 +63,12 @@ export const vehicleInventoryGetManyDescription: INodeProperties[] = [
 						type: 'options',
 						options: [
 							{
-								name: 'Status',
-								value: 'status',
-							},
-							{
-								name: 'Modified Start Date',
-								value: 'modifiedStartTime',
-							},
-							{
 								name: 'Stock Type',
 								value: 'stockType',
 							},
 						],
-						default: 'status',
+						default: 'stockType',
 						description: 'The field to filter on',
-					},
-					{
-						displayName: 'Status',
-						name: 'status',
-						type: 'options',
-						displayOptions: {
-							show: {
-								field: ['status'],
-							},
-						},
-						options: [
-							{ name: 'Cancelled', value: 'CANCELLED' },
-							{ name: 'Draft', value: 'DRAFT' },
-							{ name: 'Float', value: 'FLOAT' },
-							{ name: 'In Transit', value: 'IN_TRANSIT' },
-							{ name: 'Invoiced', value: 'INVOICED' },
-							{ name: 'On Hold', value: 'ON_HOLD' },
-							{ name: 'On Order', value: 'ON_ORDER' },
-							{ name: 'Sold', value: 'SOLD' },
-							{ name: 'Stocked In', value: 'STOCKED_IN' },
-							{ name: 'Tentative', value: 'TENTATIVE' },
-							{ name: 'Transferred Out', value: 'TRANSFERRED_OUT' },
-						],
-						default: 'SOLD',
-						description: 'The status of the vehicles to filter on',
-					},
-					{
-						displayName: 'Modified Start Date',
-						name: 'modifiedStartTime',
-						type: 'dateTime',
-						displayOptions: {
-							show: {
-								field: ['modifiedStartTime'],
-							},
-						},
-						default: '',
-						description: 'The start date of the vehicles to filter on',
 					},
 					{
 						displayName: 'Stock Type',
