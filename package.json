@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-tekion-apc",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "n8n community node to work with the Tekion APC API",
 	"license": "MIT",
 	"homepage": "https://example.com",
