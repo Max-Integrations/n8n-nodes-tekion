@@ -1,5 +1,5 @@
 import {
-	NodeConnectionType,
+	type NodeConnectionType,
 	type INodeType,
 	type INodeTypeDescription,
 	type IExecuteFunctions,
@@ -28,8 +28,8 @@ export class TekionApc implements INodeType {
 			name: 'tekionApc',
 		},
 		usableAsTool: true,
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: ['main' as NodeConnectionType],
+		outputs: ['main' as NodeConnectionType],
 		requestDefaults: {
 			headers: {
 				Accept: 'application/json',
