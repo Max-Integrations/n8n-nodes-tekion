@@ -1,9 +1,9 @@
 {
-	"hooks": {
-		"before:init": false,
-		"after:bump": "npm run build"
-	},
 	"git": {
-		"add": "dist"
+		"requireCleanWorkingDir": false,
+		"add": "."
+	},
+	"hooks": {
+		"after:bump": false
 	}
 }
