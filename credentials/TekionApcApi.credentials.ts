@@ -1,9 +1,9 @@
 import type { Icon, ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class Tekion implements ICredentialType {
-	name = 'tekion';
+export class TekionApcApi implements ICredentialType {
+	name = 'tekionApcApi';
 
-	displayName = 'Tekion';
+	displayName = 'Tekion APC API';
 
 	icon: Icon = { light: 'file:../icons/tekion.svg', dark: 'file:../icons/tekion.svg' };
 

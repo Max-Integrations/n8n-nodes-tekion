@@ -1,19 +1,19 @@
 {
-	"name": "@autolytics/n8n-nodes-tekion",
+	"name": "n8n-nodes-tekion-apc",
 	"version": "0.1.0",
-	"description": "n8n community node to work with the Tekion API",
+	"description": "n8n community node to work with the Tekion APC API",
 	"license": "MIT",
+	"homepage": "https://example.com",
 	"keywords": [
-		"n8n-community-node-package",
-		"tekion"
+		"n8n-community-node-package"
 	],
 	"author": {
 		"name": "Maxwell Chamberlain",
-		"email": "max@maxintegrations.net"
+		"email": "maxintegllc@gmail.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Max-Integrations/n8n-nodes-tekion"
+		"url": ""
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -30,10 +30,10 @@
 	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"credentials": [
-			"dist/credentials/Tekion.credentials.js"
+			"dist/credentials/TekionApcApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Tekion/Tekion.node.js"
+			"dist/nodes/TekionApc/TekionApc.node.js"
 		]
 	},
 	"devDependencies": {

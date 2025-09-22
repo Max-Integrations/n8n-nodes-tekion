@@ -5,6 +5,7 @@ import {
 	type IExecuteFunctions,
 	type INodeExecutionData,
 	IDataObject,
+	ApplicationError,
 } from 'n8n-workflow';
 import { TokenService } from './shared/tokenService';
 import { vehicleInventoryDescription } from './resources/vehicle-inventory';
@@ -14,24 +15,22 @@ const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 thirtyDaysAgo.setHours(0, 0, 0, 0);
 now.setHours(23, 59, 59, 999);
 
-export class Tekion implements INodeType {
+export class TekionApc implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Tekion',
-		name: 'tekion',
+		displayName: 'Tekion APC',
+		name: 'tekionApc',
 		icon: { light: 'file:../../icons/tekion.svg', dark: 'file:../../icons/tekion.svg' },
 		group: ['input'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{$parameter["resource"] + ": " + $parameter["action"]}}',
 		description: 'Communicate with the Tekion 2.0 API',
 		defaults: {
-			name: 'Tekion',
+			name: 'tekionApc',
 		},
 		usableAsTool: true,
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
 		requestDefaults: {
-			baseURL:
-				'={{$parameter["environment"] === "sandbox" ? "https://api-sandbox.tekioncloud.com/openapi" : "https://api.tekioncloud.com/openapi"}}',
 			headers: {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',
@@ -46,30 +45,13 @@ export class Tekion implements INodeType {
 				default: '',
 			},
 			{
-				displayName: 'Environment',
-				name: 'environment',
-				type: 'options',
-				options: [
-					{
-						name: 'Production',
-						value: 'production',
-					},
-					{
-						name: 'Sandbox',
-						value: 'sandbox',
-					},
-				],
-				default: 'production',
-				description: 'Choose between production and sandbox environment',
-			},
-			{
 				displayName: 'Resource',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Deals',
+						name: 'Deal',
 						value: 'deals',
 					},
 					{
@@ -83,7 +65,7 @@ export class Tekion implements INodeType {
 		],
 		credentials: [
 			{
-				name: 'tekion',
+				name: 'tekionApcApi',
 				required: true,
 			},
 		],
@@ -94,26 +76,25 @@ export class Tekion implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const environment = this.getNodeParameter('environment', i) as string;
 				const resource = this.getNodeParameter('resource', i) as string;
 				const action = this.getNodeParameter('action', i) as string;
-				const credentials = await this.getCredentials('tekion');
+				const credentials = await this.getCredentials('tekionApc');
 				const dealerId = this.getNodeParameter('dealerId', i) as string;
 
 				// Get credentials
 				if (!credentials?.appId || !credentials?.appSecret) {
-					throw new Error('App ID and App Secret are required');
+					throw new ApplicationError('App ID and App Secret are required');
 				}
 
 				// Initialize token service
-				const tokenService = new TokenService(this, environment);
+				const tokenService = new TokenService(this, credentials.accountType as string);
 				let bearerToken = await tokenService.getBearerToken(
 					credentials.appId as string,
 					credentials.appSecret as string,
 				);
 
 				let baseUrl: string;
-				switch (environment) {
+				switch (credentials.accountType) {
 					case 'sandbox':
 						baseUrl = 'https://api-sandbox.tekioncloud.com/openapi';
 						break;
@@ -121,7 +102,7 @@ export class Tekion implements INodeType {
 						baseUrl = 'https://api.tekioncloud.com/openapi';
 						break;
 					default:
-						throw new Error('Invalid environment');
+						throw new ApplicationError('Invalid environment');
 				}
 
 				// Set up request options with bearer token
@@ -137,11 +118,14 @@ export class Tekion implements INodeType {
 				};
 
 				// Execute the appropriate operation based on resource
-				let responseData: any;
+				let responseData;
 
 				try {
 					responseData = await handleRequest(this, requestOptions, resource, action);
-				} catch (error) {
+				} catch (error: unknown) {
+					if (error instanceof ApplicationError) {
+						throw error;
+					}
 					tokenService.clearCache(bearerToken);
 					bearerToken = await tokenService.getBearerToken(
 						credentials.appId as string,
@@ -172,7 +156,7 @@ export class Tekion implements INodeType {
 }
 async function handleRequest(
 	instance: IExecuteFunctions,
-	requestOptions: any,
+	requestOptions: IDataObject,
 	resource: string,
 	action: string,
 ) {
@@ -182,13 +166,13 @@ async function handleRequest(
 		case 'deals':
 			return await handleDeals(instance, requestOptions, action);
 		default:
-			throw new Error('Invalid resource');
+			throw new ApplicationError('Invalid resource');
 	}
 }
 
 async function handleVehicleInventory(
 	instance: IExecuteFunctions,
-	requestOptions: any,
+	requestOptions: IDataObject,
 	action: string,
 ) {
 	let url: string;
@@ -197,7 +181,7 @@ async function handleVehicleInventory(
 			url = '/v4.0.0/vehicle-inventory';
 			break;
 		default:
-			throw new Error('Invalid action');
+			throw new ApplicationError('Invalid action');
 	}
 
 	const filtersRaw = instance.getNodeParameter('filters', 0) as IDataObject;
@@ -241,7 +225,11 @@ async function handleVehicleInventory(
 	};
 }
 
-async function handleDeals(instance: IExecuteFunctions, requestOptions: any, action: string) {
+async function handleDeals(
+	instance: IExecuteFunctions,
+	requestOptions: IDataObject,
+	action: string,
+) {
 	switch (action) {
 		case 'getMany':
 			return await instance.helpers.httpRequest({
@@ -250,6 +238,6 @@ async function handleDeals(instance: IExecuteFunctions, requestOptions: any, act
 				method: 'GET',
 			});
 		default:
-			throw new Error('Invalid action');
+			throw new ApplicationError('Invalid action');
 	}
 }
