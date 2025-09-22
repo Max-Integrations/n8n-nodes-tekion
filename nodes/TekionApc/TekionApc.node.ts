@@ -78,7 +78,7 @@ export class TekionApc implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const action = this.getNodeParameter('action', i) as string;
-				const credentials = await this.getCredentials('tekionApc');
+				const credentials = await this.getCredentials('tekionApcApi');
 				const dealerId = this.getNodeParameter('dealerId', i) as string;
 
 				// Get credentials
