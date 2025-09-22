@@ -4,7 +4,6 @@ import type {
 	ICredentialDataDecryptedObject,
 	ICredentialTestRequest,
 	ICredentialType,
-	IDataObject,
 	IHttpRequestHelper,
 	INodeProperties,
 } from 'n8n-workflow';

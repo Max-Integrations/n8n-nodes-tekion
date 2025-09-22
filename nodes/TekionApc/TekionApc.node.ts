@@ -172,7 +172,7 @@ async function handleVehicleInventory(
 			return acc;
 		}, {}) ?? {};
 
-	let qs = [];
+	const qs = [];
 
 	if (modifiedStartTime) {
 		filters.modifiedStartTime = new Date(modifiedStartTime as string).getTime();
