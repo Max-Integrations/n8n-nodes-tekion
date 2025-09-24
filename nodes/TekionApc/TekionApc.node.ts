@@ -97,14 +97,12 @@ export class TekionApc implements INodeType {
 						throw new ApplicationError('Invalid environment');
 				}
 
-				// Set up request options with bearer token
+				// Set up request options (auth injected via credential helper)
 				const requestOptions = {
 					baseURL: baseUrl,
 					headers: {
-						Authorization: `Bearer ${credentials.sessionToken}`,
 						Accept: '*/*',
 						'Content-Type': 'application/json',
-						app_id: credentials.appId as string,
 						dealer_id: dealerId,
 					},
 				};
@@ -198,11 +196,15 @@ async function handleVehicleInventory(
 
 	switch (action) {
 		case 'getMany':
-			returnData = await instance.helpers.httpRequest({
-				...requestOptions,
-				url: url,
-				method: 'GET',
-			});
+			returnData = await instance.helpers.httpRequestWithAuthentication.call(
+				instance,
+				'tekionApcApi',
+				{
+					...requestOptions,
+					url: url,
+					method: 'GET',
+				},
+			);
 	}
 
 	const data = returnData.data.filter((item: IDataObject) => {
@@ -229,14 +231,12 @@ async function handleDeals(
 	requestOptions: IDataObject,
 	action: string,
 ) {
-	switch (action) {
-		case 'getMany':
-			return await instance.helpers.httpRequest({
-				...requestOptions,
-				url: '/v4.0.0/deals',
-				method: 'GET',
-			});
-		default:
-			throw new ApplicationError('Invalid action');
+	if (action === 'getMany') {
+		return await instance.helpers.httpRequestWithAuthentication.call(instance, 'tekionApcApi', {
+			...requestOptions,
+			url: '/v4.0.0/deals',
+			method: 'GET',
+		});
 	}
+	throw new ApplicationError('Invalid action');
 }

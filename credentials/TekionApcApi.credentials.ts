@@ -1,10 +1,10 @@
 import type {
-	IAuthenticateGeneric,
 	Icon,
 	ICredentialDataDecryptedObject,
 	ICredentialTestRequest,
 	ICredentialType,
 	IHttpRequestHelper,
+	IHttpRequestOptions,
 	INodeProperties,
 } from 'n8n-workflow';
 
@@ -56,16 +56,29 @@ export class TekionApcApi implements ICredentialType {
 				expirable: true,
 			},
 			default: '',
-			required: false,
+			required: true,
+		},
+		{
+			displayName: 'Session Token Expiration',
+			name: 'sessionTokenExpiresAt',
+			type: 'hidden',
+			default: '',
+			required: true,
 		},
 	];
 
 	async preAuthentication(this: IHttpRequestHelper, credentials: ICredentialDataDecryptedObject) {
+		let shouldFetchNewToken = false;
+		if (!credentials.sessionToken) shouldFetchNewToken = true;
+		if (!credentials.sessionTokenExpiresAt) shouldFetchNewToken = true;
+		if (new Date(credentials.sessionTokenExpiresAt as string) <= new Date())
+			shouldFetchNewToken = true;
+		if (!shouldFetchNewToken) return credentials;
 		const baseURL =
 			credentials.accountType === 'sandbox'
 				? 'https://api-sandbox.tekioncloud.com/openapi'
 				: 'https://api.tekioncloud.com/openapi';
-		const response = (await this.helpers.httpRequest({
+		const requestOptions = {
 			method: 'POST',
 			url: `${baseURL}/public/tokens`,
 			headers: {
@@ -75,7 +88,8 @@ export class TekionApcApi implements ICredentialType {
 				app_id: credentials.appId,
 				secret_key: credentials.appSecret,
 			},
-		})) as {
+		} as const;
+		const response = (await this.helpers.httpRequest(requestOptions)) as {
 			data: {
 				token_type: string;
 				access_token: string;
@@ -85,16 +99,28 @@ export class TekionApcApi implements ICredentialType {
 			};
 			status: 'success';
 		};
-		return { sessionToken: response.data.access_token };
+		const sessionTokenExpiresAt = new Date(response.data.expire_on * 1000).toISOString();
+		return {
+			sessionToken: response.data.access_token,
+			sessionTokenExpiresAt: sessionTokenExpiresAt,
+		};
 	}
 
-	authenticate: IAuthenticateGeneric = {
-		type: 'generic',
-		properties: {
+	authenticate: (
+		credentials: ICredentialDataDecryptedObject,
+		requestOptions: IHttpRequestOptions,
+	) => Promise<IHttpRequestOptions> = async (
+		credentials: ICredentialDataDecryptedObject,
+		requestOptions: IHttpRequestOptions,
+	) => {
+		return {
+			...requestOptions,
 			headers: {
-				Authorization: `Bearer {{ $credentials.sessionToken }}`,
+				...requestOptions.headers,
+				Authorization: `Bearer ${credentials.sessionToken as string}`,
+				app_id: credentials.appId as string,
 			},
-		},
+		};
 	};
 
 	test: ICredentialTestRequest = {
